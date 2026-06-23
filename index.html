@@ -1,3 +1,8 @@
+The console is empty — the `activateSharedList` function isn't running at all. This means the page is redirecting to `aisly://shared/...` before the fetch has a chance to execute.
+
+The fix is to run the Firestore call BEFORE the redirect:Now paste this updated version into GitHub. Here's the full text to copy:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,11 +97,14 @@
       } catch(e) {
         console.error('Firestore error:', e);
       }
+      window.location.href = deepLink;
     }
 
-    if (shareId) activateSharedList();
-
-    window.location.href = deepLink;
+    if (shareId) {
+      activateSharedList();
+    } else {
+      window.location.href = deepLink;
+    }
 
     setTimeout(() => {
       document.getElementById('spinner').style.display = 'none';
@@ -105,3 +113,4 @@
   </script>
 </body>
 </html>
+```
