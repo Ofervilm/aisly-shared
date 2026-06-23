@@ -1,86 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aisly – Opening shared list…</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f7f8f5;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /catalog/{domain}/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
     }
-    .card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 40px 32px;
-      text-align: center;
-      max-width: 380px;
-      width: 100%;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    match /users/{userId}/shoppingList/{itemId} {
+      allow read, write: if request.auth != null && (
+        request.auth.uid == userId ||
+        exists(/databases/$(database)/documents/sharedLists/$(userId + '_shared'))
+      );
     }
-    .logo { font-size: 48px; margin-bottom: 8px; }
-    .app-name { font-size: 28px; font-weight: 800; color: #1a1a2e; margin-bottom: 4px; }
-    .tagline { font-size: 14px; color: #888; margin-bottom: 32px; }
-    .message { font-size: 16px; color: #1a1a2e; font-weight: 600; margin-bottom: 8px; }
-    .sub { font-size: 13px; color: #888; margin-bottom: 32px; line-height: 1.5; }
-    .open-btn {
-      display: block;
-      background: #1D9E75;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-      padding: 16px 32px;
-      border-radius: 14px;
-      text-decoration: none;
-      margin-bottom: 16px;
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    .install-link { font-size: 13px; color: #1D9E75; text-decoration: none; }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #e8e8e8;
-      border-top-color: #1D9E75;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 24px;
+    match /sharedLists/{shareId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      allow update: if request.auth != null || 
+        (request.resource.data.keys().hasOnly(['isActive']) && request.resource.data.isActive == true);
+      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      
+      match /items/{itemId} {
+        allow read, write: if request.auth != null;
+      }
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="logo">🛒</div>
-    <div class="app-name">aisly</div>
-    <div class="tagline">Compare. Save. Shop smarter.</div>
-    <div class="spinner" id="spinner"></div>
-    <div class="message" id="message">Opening shared list…</div>
-    <div class="sub" id="sub">If the app doesn't open automatically, tap the button below.</div>
-    <a class="open-btn" id="openBtn" href="#">Open in Aisly</a>
-    <a class="install-link" href="https://play.google.com/store/apps/details?id=com.aisly.grocery">
-      Don't have Aisly? Download it free →
-    </a>
-  </div>
-
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const shareId = params.get('id') || window.location.pathname.split('/').pop();
-    const deepLink = `aisly://shared/${shareId}`;
-
-    document.getElementById('openBtn').href = deepLink;
-
-    // Auto-open the app
-    window.location.href = deepLink;
-
-    // After 2.5s, hide spinner and show manual button prominently
-    setTimeout(() => {
-      document.getElementById('spinner').style.display = 'none';
-      document.getElementById('message').textContent = 'Tap below to open your list';
-    }, 2500);
-  </script>
-</body>
-</html>
+  }
+}
