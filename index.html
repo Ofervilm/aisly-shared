@@ -70,6 +70,7 @@
     const params = new URLSearchParams(window.location.search);
     const shareId = params.get('id') || window.location.pathname.split('/').pop();
     const recipientName = params.get('name') || null;
+    const permission = params.get('perm') || 'can_edit';
     const deepLink = `aisly://shared/${shareId}`;
     const PROJECT = 'myapp-e1696';
     const API_KEY = 'AIzaSyBUg_dpHC2BA3GGXAmahAJwQKn52DTNvUQ';
@@ -82,16 +83,26 @@
         // Get existing invitees first
         const getRes = await fetch(`${BASE}?key=${API_KEY}`);
         const getData = await getRes.json();
-        const existingInvitees = getData.fields?.invitees?.arrayValue?.values?.map(v => v.stringValue) || [];
+        const existingInvitees = getData.fields?.invitees?.arrayValue?.values?.map(v => 
+          v.mapValue ? {
+            name: v.mapValue.fields?.name?.stringValue || '',
+            permission: v.mapValue.fields?.permission?.stringValue || 'can_edit'
+          } : { name: v.stringValue || '', permission: 'can_edit' }
+        ) || [];
 
-        // Add recipient name if provided and not already there
-        const newInvitees = recipientName && !existingInvitees.includes(recipientName)
-          ? [...existingInvitees, recipientName]
-          : existingInvitees;
+        // Add recipient as object with name and permission if not already there
+        const newInvitees = existingInvitees.some(i => i.name === recipientName)
+          ? existingInvitees
+          : [...existingInvitees, { name: recipientName, permission: permission }];
 
         const fields = { isActive: { booleanValue: true } };
         if (newInvitees.length > 0) {
-          fields.invitees = { arrayValue: { values: newInvitees.map(n => ({ stringValue: n })) } };
+          fields.invitees = { arrayValue: { values: newInvitees.map(i => ({ 
+            mapValue: { fields: { 
+              name: { stringValue: i.name }, 
+              permission: { stringValue: i.permission } 
+            }}
+          })) } };
         }
 
         const res = await fetch(`${BASE}?updateMask.fieldPaths=isActive&updateMask.fieldPaths=invitees&key=${API_KEY}`, {
