@@ -3,132 +3,217 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aisly – Opening shared list…</title>
+  <title>Aisly – Shared Shopping List</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f7f8f5;
+      background: #f0fdf4;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
     }
+
     .card {
       background: #fff;
-      border-radius: 20px;
+      border-radius: 24px;
       padding: 40px 32px;
-      text-align: center;
-      max-width: 380px;
+      max-width: 400px;
       width: 100%;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      text-align: center;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.08);
     }
-    .logo { font-size: 48px; margin-bottom: 8px; }
-    .app-name { font-size: 28px; font-weight: 800; color: #1a1a2e; margin-bottom: 4px; }
-    .tagline { font-size: 14px; color: #888; margin-bottom: 32px; }
-    .message { font-size: 16px; color: #1a1a2e; font-weight: 600; margin-bottom: 8px; }
-    .sub { font-size: 13px; color: #888; margin-bottom: 32px; line-height: 1.5; }
+
+    .logo {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .app-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1D9E75;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    .invite-box {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 28px;
+    }
+
+    .invite-from {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .invite-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 10px;
+    }
+
+    .invite-message {
+      font-size: 15px;
+      color: #374151;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .perm-badge {
+      display: inline-block;
+      background: #1D9E75;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 20px;
+      padding: 4px 14px;
+    }
+
+    .pending-note {
+      font-size: 13px;
+      color: #F59E0B;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
     .open-btn {
       display: block;
       background: #1D9E75;
       color: #fff;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
-      padding: 16px 32px;
       border-radius: 14px;
+      padding: 16px;
       text-decoration: none;
+      margin-bottom: 14px;
+      transition: opacity 0.15s;
+    }
+
+    .open-btn:active { opacity: 0.85; }
+
+    .download-btn {
+      display: block;
+      background: #f3f4f6;
+      color: #1a1a2e;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 14px;
+      padding: 14px;
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: opacity 0.15s;
+    }
+
+    .download-btn:active { opacity: 0.75; }
+
+    .footer-note {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+
+    .redirecting {
+      font-size: 14px;
+      color: #1D9E75;
       margin-bottom: 16px;
+      font-weight: 500;
     }
-    .install-link { font-size: 13px; color: #1D9E75; text-decoration: none; }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #e8e8e8;
-      border-top-color: #1D9E75;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 24px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Permission label colours */
+    .perm-view    { background: #6b7280; }
+    .perm-edit    { background: #7B2FBE; }
+    .perm-shop    { background: #1D9E75; }
+    .perm-invite  { background: #f59e0b; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">🛒</div>
-    <div class="app-name">aisly</div>
-    <div class="tagline">Compare. Save. Shop smarter.</div>
-    <div class="spinner" id="spinner"></div>
-    <div class="message" id="message">Opening shared list…</div>
-    <div class="sub" id="sub">If the app doesn't open automatically, tap the button below.</div>
-    <a class="open-btn" id="openBtn" href="#">Open in Aisly</a>
-    <a class="install-link" href="https://play.google.com/store/apps/details?id=com.aisly.grocery">
-      Don't have Aisly? Download it free →
+    <div class="app-name">Aisly</div>
+
+    <div class="invite-box">
+      <div class="invite-from">You've been invited to a shopping list</div>
+      <div class="invite-name" id="invitee-name"></div>
+      <div class="invite-message" id="invite-message"></div>
+      <span class="perm-badge" id="perm-badge"></span>
+      <div class="pending-note" id="pending-note">⏳ Opening Aisly will mark you as active</div>
+    </div>
+
+    <div class="redirecting" id="redirecting-msg">Opening Aisly app…</div>
+
+    <a href="#" class="open-btn" id="open-btn">Open in Aisly</a>
+    <a
+      href="https://play.google.com/store/apps/details?id=com.ofervilm.myapp"
+      class="download-btn"
+      id="download-btn"
+    >
+      📲 Don't have Aisly? Download free
     </a>
+
+    <div class="footer-note">
+      Aisly helps you compare grocery prices across Tesco, Sainsbury's, Asda, Waitrose &amp; more.<br/>
+      Free to download on Android.
+    </div>
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const shareId = params.get('id') || window.location.pathname.split('/').pop();
-    const recipientName = params.get('name') || null;
-    const permission = params.get('perm') || 'can_edit';
+    // ── Parse URL params ──────────────────────────────────────────────────────
+    const params  = new URLSearchParams(window.location.search);
+    const shareId = params.get('id')   || '';
+    const name    = params.get('name') || 'You';
+    const perm    = params.get('perm') || 'can_shop';
+
+    // ── Permission labels ─────────────────────────────────────────────────────
+    const permLabels = {
+      view_only:  { label: '👁️ View only',  cls: 'perm-view'   },
+      can_edit:   { label: '✏️ Can edit',    cls: 'perm-edit'   },
+      can_shop:   { label: '🛒 Can shop',    cls: 'perm-shop'   },
+      can_invite: { label: '👥 Can invite',  cls: 'perm-invite' },
+    };
+    const permInfo = permLabels[perm] || permLabels['can_shop'];
+
+    // ── Populate UI ───────────────────────────────────────────────────────────
+    document.getElementById('invitee-name').textContent = name;
+    document.getElementById('invite-message').textContent =
+      'Tap below to open the shared list in the Aisly app.';
+
+    const badge = document.getElementById('perm-badge');
+    badge.textContent = permInfo.label;
+    badge.classList.add(permInfo.cls);
+
+    // ── Deep link ─────────────────────────────────────────────────────────────
     const deepLink = `aisly://shared/${shareId}`;
-    const PROJECT = 'myapp-e1696';
-    const API_KEY = 'AIzaSyBUg_dpHC2BA3GGXAmahAJwQKn52DTNvUQ';
-    const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents/sharedLists/${shareId}`;
+    document.getElementById('open-btn').href = deepLink;
 
-    document.getElementById('openBtn').href = deepLink;
-
-    async function activateSharedList() {
-      try {
-        // Get existing invitees first
-        const getRes = await fetch(`${BASE}?key=${API_KEY}`);
-        const getData = await getRes.json();
-        const existingInvitees = getData.fields?.invitees?.arrayValue?.values?.map(v => 
-          v.mapValue ? {
-            name: v.mapValue.fields?.name?.stringValue || '',
-            permission: v.mapValue.fields?.permission?.stringValue || 'can_shop',
-            status: v.mapValue.fields?.status?.stringValue || 'pending'
-          } : { name: v.stringValue || '', permission: 'can_shop', status: 'pending' }
-        ) || [];
-
-        // Update existing invitee status to 'active' or add new one
-        const newInvitees = existingInvitees.some(i => i.name === recipientName)
-          ? existingInvitees.map(i => i.name === recipientName ? { ...i, status: 'active' } : i)
-          : [...existingInvitees, { name: recipientName, permission: permission, status: 'active' }];
-
-        const fields = { isActive: { booleanValue: true } };
-        if (newInvitees.length > 0) {
-          fields.invitees = { arrayValue: { values: newInvitees.map(i => ({ 
-            mapValue: { fields: { 
-              name: { stringValue: i.name }, 
-              permission: { stringValue: i.permission },
-              status: { stringValue: i.status || 'active' }
-            }}
-          })) } };
-        }
-
-        const res = await fetch(`${BASE}?updateMask.fieldPaths=isActive&updateMask.fieldPaths=invitees&key=${API_KEY}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fields })
-        });
-        const data = await res.json();
-        console.log('Firestore response:', res.status, data);
-      } catch(e) {
-        console.error('Firestore error:', e);
-      }
+    // ── Auto-redirect after short delay ──────────────────────────────────────
+    let redirected = false;
+    function tryRedirect() {
+      if (redirected) return;
+      redirected = true;
       window.location.href = deepLink;
     }
 
-    if (shareId) {
-      activateSharedList();
-    } else {
-      window.location.href = deepLink;
-    }
+    // Auto attempt after 800ms — gives the page time to render first
+    setTimeout(tryRedirect, 800);
 
+    // ── If app not installed, show download button more prominently ───────────
     setTimeout(() => {
-      document.getElementById('spinner').style.display = 'none';
-      document.getElementById('message').textContent = 'Tap below to open your list';
+      const msg = document.getElementById('redirecting-msg');
+      const dl  = document.getElementById('download-btn');
+      // If still on page after 2.5s, app probably isn't installed
+      msg.textContent = "Didn't open? Tap the button above, or download Aisly first.";
+      dl.style.background = '#1D9E75';
+      dl.style.color = '#fff';
     }, 2500);
   </script>
 </body>
