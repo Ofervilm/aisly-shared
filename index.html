@@ -134,14 +134,12 @@
           invitees = getData.fields.invitees.arrayValue.values;
         }
 
-        // Find this person and change their status from pending → active
-        // If they somehow aren't in the list yet, add them as active
-        const idx = invitees.findIndex(v => v.mapValue?.fields?.name?.stringValue === name);
-        if (idx >= 0) {
-          // Update existing entry — flip status to active
-          invitees[idx].mapValue.fields.status = { stringValue: 'active' };
-        } else if (name) {
-          // Not in list yet (shouldn't happen but handle gracefully)
+        // Only add if not already in the list
+        const alreadyThere = invitees.some(v =>
+          v.mapValue?.fields?.name?.stringValue === name
+        );
+
+        if (!alreadyThere && name) {
           invitees.push({
             mapValue: {
               fields: {
@@ -153,7 +151,7 @@
           });
         }
 
-        // Write back
+        // Write back — add invitee as active + set isActive true
         await fetch(
           `${BASE}?updateMask.fieldPaths=isActive&updateMask.fieldPaths=invitees&key=${API_KEY}`,
           {
