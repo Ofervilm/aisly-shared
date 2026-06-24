@@ -86,21 +86,23 @@
         const existingInvitees = getData.fields?.invitees?.arrayValue?.values?.map(v => 
           v.mapValue ? {
             name: v.mapValue.fields?.name?.stringValue || '',
-            permission: v.mapValue.fields?.permission?.stringValue || 'can_edit'
-          } : { name: v.stringValue || '', permission: 'can_edit' }
+            permission: v.mapValue.fields?.permission?.stringValue || 'can_shop',
+            status: v.mapValue.fields?.status?.stringValue || 'pending'
+          } : { name: v.stringValue || '', permission: 'can_shop', status: 'pending' }
         ) || [];
 
-        // Add recipient as object with name and permission if not already there
+        // Update existing invitee status to 'active' or add new one
         const newInvitees = existingInvitees.some(i => i.name === recipientName)
-          ? existingInvitees
-          : [...existingInvitees, { name: recipientName, permission: permission }];
+          ? existingInvitees.map(i => i.name === recipientName ? { ...i, status: 'active' } : i)
+          : [...existingInvitees, { name: recipientName, permission: permission, status: 'active' }];
 
         const fields = { isActive: { booleanValue: true } };
         if (newInvitees.length > 0) {
           fields.invitees = { arrayValue: { values: newInvitees.map(i => ({ 
             mapValue: { fields: { 
               name: { stringValue: i.name }, 
-              permission: { stringValue: i.permission } 
+              permission: { stringValue: i.permission },
+              status: { stringValue: i.status || 'active' }
             }}
           })) } };
         }
