@@ -43,77 +43,31 @@
       font-weight: 600;
       border-radius: 20px;
       padding: 4px 14px;
-      margin-bottom: 0;
     }
     .perm-view   { background: #6b7280; }
     .perm-edit   { background: #7B2FBE; }
     .perm-shop   { background: #1D9E75; }
     .perm-invite { background: #f59e0b; }
-
-    .steps {
-      text-align: left;
-      margin-bottom: 24px;
-    }
-    .steps-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-    .step {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
+    .steps { text-align: left; margin-bottom: 24px; }
+    .steps-title { font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
     .step-num {
-      background: #1D9E75;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
+      background: #1D9E75; color: #fff; font-size: 12px; font-weight: 700;
+      border-radius: 50%; width: 22px; height: 22px; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
     }
     .step-text { font-size: 14px; color: #374151; line-height: 1.5; }
     .step-text strong { color: #1a1a2e; }
-
     .open-btn {
-      display: block;
-      background: #1D9E75;
-      color: #fff;
-      font-size: 17px;
-      font-weight: 700;
-      border-radius: 14px;
-      padding: 16px;
-      cursor: pointer;
-      border: none;
-      width: 100%;
-      margin-bottom: 12px;
+      display: block; background: #1D9E75; color: #fff; font-size: 17px;
+      font-weight: 700; border-radius: 14px; padding: 16px; cursor: pointer;
+      border: none; width: 100%; margin-bottom: 12px;
     }
     .download-btn {
-      display: block;
-      background: #f3f4f6;
-      color: #1a1a2e;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 14px;
-      padding: 14px;
-      text-decoration: none;
-      margin-bottom: 10px;
+      display: block; background: #f3f4f6; color: #1a1a2e; font-size: 15px;
+      font-weight: 600; border-radius: 14px; padding: 14px; text-decoration: none; margin-bottom: 10px;
     }
-    .already-have {
-      font-size: 12px;
-      color: #9ca3af;
-      margin-top: 8px;
-    }
+    .already-have { font-size: 12px; color: #9ca3af; margin-top: 8px; }
     .status-msg { font-size: 13px; color: #1D9E75; margin-bottom: 12px; font-weight: 500; min-height: 20px; }
     .footer-note { font-size: 12px; color: #9ca3af; margin-top: 20px; line-height: 1.6; border-top: 1px solid #f3f4f6; padding-top: 16px; }
   </style>
@@ -122,13 +76,11 @@
   <div class="card">
     <div class="logo">🛒</div>
     <div class="app-name">Aisly</div>
-
     <div class="invite-box">
       <div class="invite-from">You've been invited to a shopping list</div>
       <div class="invite-name" id="invitee-name"></div>
       <span class="perm-badge" id="perm-badge"></span>
     </div>
-
     <div class="steps">
       <div class="steps-title">To access the shared list:</div>
       <div class="step">
@@ -144,15 +96,12 @@
         <div class="step-text"><strong>Tap "Open in Aisly"</strong> below to open the shared list</div>
       </div>
     </div>
-
     <div class="status-msg" id="status-msg"></div>
-
     <button class="open-btn" id="open-btn">Open in Aisly</button>
     <a href="https://play.google.com/store/apps/details?id=com.ofervilm.myapp" class="download-btn">
       📲 Download Aisly — free on Android
     </a>
     <div class="already-have">Already have the app? Tap "Open in Aisly" above</div>
-
     <div class="footer-note">
       Aisly helps you compare grocery prices across Tesco, Sainsbury's, Asda, Waitrose &amp; more.
       An account is required to view and edit shared lists.
@@ -185,9 +134,7 @@
 
     document.getElementById('open-btn').addEventListener('click', async () => {
       document.getElementById('status-msg').textContent = 'Opening Aisly…';
-
       try {
-        // Read current invitees
         const getRes  = await fetch(`${BASE}?key=${API_KEY}`);
         const getData = await getRes.json();
 
@@ -196,12 +143,15 @@
           invitees = getData.fields.invitees.arrayValue.values;
         }
 
-        // Only add if not already in the list
-        const alreadyThere = invitees.some(v =>
+        // Find this person and flip status from pending → active
+        const idx = invitees.findIndex(v =>
           v.mapValue?.fields?.name?.stringValue === name
         );
-
-        if (!alreadyThere && name) {
+        if (idx >= 0) {
+          // Already in list as pending — flip to active
+          invitees[idx].mapValue.fields.status = { stringValue: 'active' };
+        } else if (name) {
+          // Not in list — add as active (edge case)
           invitees.push({
             mapValue: {
               fields: {
@@ -213,7 +163,6 @@
           });
         }
 
-        // Write back — add invitee as active + set isActive true
         await fetch(
           `${BASE}?updateMask.fieldPaths=isActive&updateMask.fieldPaths=invitees&key=${API_KEY}`,
           {
@@ -231,10 +180,8 @@
         console.error('Firestore error:', e);
       }
 
-      // Try to open the app
       window.location.href = deepLink;
 
-      // After 2.5s if still here — app not installed
       setTimeout(() => {
         document.getElementById('status-msg').textContent = "App not installed? Download Aisly first 👇";
         document.getElementById('open-btn').textContent = 'Try again';
