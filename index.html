@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aisly – Shared Shopping List</title>
+  <title>Aisly – You've been invited!</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f0fdf4;
-      min-height: 100vh;
+      background: #f8f9fa;
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 100vh;
       padding: 24px;
     }
     .card {
@@ -24,169 +24,143 @@
       text-align: center;
       box-shadow: 0 4px 32px rgba(0,0,0,0.08);
     }
-    .logo { font-size: 48px; margin-bottom: 8px; }
-    .app-name { font-size: 22px; font-weight: 800; color: #1D9E75; margin-bottom: 24px; }
-    .invite-box {
-      background: #f0fdf4;
-      border: 1.5px solid #bbf7d0;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 24px;
-      text-align: left;
-    }
-    .invite-from { font-size: 14px; color: #6b7280; margin-bottom: 4px; }
-    .invite-name { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
-    .perm-badge {
-      display: inline-block;
+    .logo { font-size: 48px; margin-bottom: 16px; }
+    h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 8px; }
+    .sub { font-size: 16px; color: #6b7280; margin-bottom: 32px; line-height: 1.5; }
+    .btn {
+      display: block;
+      background: #1D9E75;
       color: #fff;
-      font-size: 13px;
+      text-decoration: none;
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .btn-secondary {
+      display: block;
+      background: #f3f4f6;
+      color: #1a1a2e;
+      text-decoration: none;
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-size: 15px;
       font-weight: 600;
-      border-radius: 20px;
-      padding: 4px 14px;
+      margin-bottom: 24px;
     }
-    .perm-view   { background: #6b7280; }
-    .perm-edit   { background: #7B2FBE; }
-    .perm-shop   { background: #1D9E75; }
-    .perm-invite { background: #f59e0b; }
-    .steps { text-align: left; margin-bottom: 24px; }
-    .steps-title { font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-    .step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-    .step-num {
-      background: #1D9E75; color: #fff; font-size: 12px; font-weight: 700;
-      border-radius: 50%; width: 22px; height: 22px; display: flex;
-      align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
-    }
-    .step-text { font-size: 14px; color: #374151; line-height: 1.5; }
-    .step-text strong { color: #1a1a2e; }
-    .open-btn {
-      display: block; background: #1D9E75; color: #fff; font-size: 17px;
-      font-weight: 700; border-radius: 14px; padding: 16px; cursor: pointer;
-      border: none; width: 100%; margin-bottom: 12px;
-    }
-    .download-btn {
-      display: block; background: #f3f4f6; color: #1a1a2e; font-size: 15px;
-      font-weight: 600; border-radius: 14px; padding: 14px; text-decoration: none; margin-bottom: 10px;
-    }
-    .already-have { font-size: 12px; color: #9ca3af; margin-top: 8px; }
-    .status-msg { font-size: 13px; color: #1D9E75; margin-bottom: 12px; font-weight: 500; min-height: 20px; }
-    .footer-note { font-size: 12px; color: #9ca3af; margin-top: 20px; line-height: 1.6; border-top: 1px solid #f3f4f6; padding-top: 16px; }
+    .status { font-size: 13px; color: #aaa; }
+    .loading { color: #1D9E75; font-size: 15px; margin: 16px 0; }
+    .error { color: #ef4444; font-size: 14px; margin: 16px 0; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">🛒</div>
-    <div class="app-name">Aisly</div>
-    <div class="invite-box">
-      <div class="invite-from">You've been invited to a shopping list</div>
-      <div class="invite-name" id="invitee-name"></div>
-      <span class="perm-badge" id="perm-badge"></span>
-    </div>
-    <div class="steps">
-      <div class="steps-title">To access the shared list:</div>
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text"><strong>Install Aisly</strong> on your Android phone — it's free</div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text"><strong>Create an account</strong> or log in if you already have one</div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text"><strong>Tap "Open in Aisly"</strong> below to open the shared list</div>
-      </div>
-    </div>
-    <div class="status-msg" id="status-msg"></div>
-    <button class="open-btn" id="open-btn">Open in Aisly</button>
-    <a href="https://play.google.com/store/apps/details?id=com.ofervilm.myapp" class="download-btn">
-      📲 Download Aisly — free on Android
-    </a>
-    <div class="already-have">Already have the app? Tap "Open in Aisly" above</div>
-    <div class="footer-note">
-      Aisly helps you compare grocery prices across Tesco, Sainsbury's, Asda, Waitrose &amp; more.
-      An account is required to view and edit shared lists.
-    </div>
+    <h1 id="title">You've been invited!</h1>
+    <p class="sub" id="subtitle">Loading your invite...</p>
+    <p class="loading" id="status">Activating your invite...</p>
+    <a id="openBtn" class="btn" style="display:none">Open in Aisly</a>
+    <a id="downloadBtn" class="btn-secondary" href="https://play.google.com/store/apps/details?id=com.aisly.grocery" style="display:none">Download Aisly Free</a>
+    <p class="status" id="footer"></p>
   </div>
 
-  <script>
-    const params   = new URLSearchParams(window.location.search);
-    const shareId  = params.get('id')   || '';
-    const name     = params.get('name') || '';
-    const perm     = params.get('perm') || 'can_shop';
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-    const PROJECT  = 'myapp-e1696';
-    const API_KEY  = 'AIzaSyBUg_dpHC2BA3GGXAmahAJwQKn52DTNvUQ';
-    const BASE     = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents/sharedLists/${shareId}`;
-    const deepLink = `aisly://shared/${shareId}`;
-
-    const permLabels = {
-      view_only:  { label: '👁️ View only',  cls: 'perm-view'   },
-      can_edit:   { label: '✏️ Can edit',    cls: 'perm-edit'   },
-      can_shop:   { label: '🛒 Can shop',    cls: 'perm-shop'   },
-      can_invite: { label: '👥 Can invite',  cls: 'perm-invite' },
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      authDomain: "myapp-e1696.firebaseapp.com",
+      projectId: "myapp-e1696",
+      storageBucket: "myapp-e1696.appspot.com",
+      messagingSenderId: "XXXXXXXXXXXX",
+      appId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     };
-    const permInfo = permLabels[perm] || permLabels['can_shop'];
 
-    document.getElementById('invitee-name').textContent = name || 'You';
-    const badge = document.getElementById('perm-badge');
-    badge.textContent = permInfo.label;
-    badge.classList.add(permInfo.cls);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    document.getElementById('open-btn').addEventListener('click', async () => {
-      document.getElementById('status-msg').textContent = 'Opening Aisly…';
+    async function activate() {
+      const params = new URLSearchParams(window.location.search);
+      const shareId = params.get('id');
+      const name    = params.get('name');
+      const perm    = params.get('perm');
+
+      const titleEl    = document.getElementById('title');
+      const subtitleEl = document.getElementById('subtitle');
+      const statusEl   = document.getElementById('status');
+      const openBtn    = document.getElementById('openBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const footerEl   = document.getElementById('footer');
+
+      if (!shareId || !name) {
+        titleEl.textContent = 'Invalid link';
+        subtitleEl.textContent = 'This invite link is missing some information. Please ask the sender to resend it.';
+        statusEl.textContent = '';
+        return;
+      }
+
+      const decodedName = decodeURIComponent(name);
+      const decodedPerm = decodeURIComponent(perm || 'can_shop');
+
+      titleEl.textContent = `Hi ${decodedName}! 👋`;
+
       try {
-        const getRes  = await fetch(`${BASE}?key=${API_KEY}`);
-        const getData = await getRes.json();
+        const docRef = doc(db, 'sharedLists', shareId);
+        const docSnap = await getDoc(docRef);
 
-        let invitees = [];
-        if (getData.fields?.invitees?.arrayValue?.values) {
-          invitees = getData.fields.invitees.arrayValue.values;
+        if (!docSnap.exists()) {
+          statusEl.textContent = '';
+          subtitleEl.textContent = 'This invite link has expired or is no longer valid.';
+          return;
         }
 
-        // Find this person and flip status from pending → active
-        const idx = invitees.findIndex(v =>
-          v.mapValue?.fields?.name?.stringValue === name
+        const data = docSnap.data();
+        const ownerName = data.ownerName || 'Someone';
+        subtitleEl.textContent = `${ownerName} has invited you to their Aisly shopping list!`;
+
+        // Update invitee status from pending → active
+        const invitees = data.invitees || [];
+        const updated = invitees.map(i =>
+          i.name === decodedName
+            ? { ...i, status: 'active', permission: decodedPerm, activatedAt: new Date().toISOString() }
+            : i
         );
-        if (idx >= 0) {
-          // Already in list as pending — flip to active
-          invitees[idx].mapValue.fields.status = { stringValue: 'active' };
-        } else if (name) {
-          // Not in list — add as active (edge case)
-          invitees.push({
-            mapValue: {
-              fields: {
-                name:       { stringValue: name },
-                permission: { stringValue: perm },
-                status:     { stringValue: 'active' },
-              }
-            }
+
+        // If invitee not in list yet (old links), add them
+        if (!invitees.some(i => i.name === decodedName)) {
+          updated.push({
+            name: decodedName,
+            permission: decodedPerm,
+            status: 'active',
+            activatedAt: new Date().toISOString(),
           });
         }
 
-        await fetch(
-          `${BASE}?updateMask.fieldPaths=isActive&updateMask.fieldPaths=invitees&key=${API_KEY}`,
-          {
-            method:  'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fields: {
-                isActive: { booleanValue: true },
-                invitees: { arrayValue: { values: invitees } },
-              }
-            })
-          }
-        );
+        await setDoc(docRef, { invitees: updated, isActive: true }, { merge: true });
+
+        statusEl.textContent = '✅ You\'re all set!';
+        footerEl.textContent = `You joined as: ${decodedName}`;
+
+        // Deep link to open Aisly app
+        const deepLink = `aisly://shared?id=${shareId}&name=${encodeURIComponent(decodedName)}`;
+        openBtn.href = deepLink;
+        openBtn.style.display = 'block';
+        downloadBtn.style.display = 'block';
+
+        // Try to open app automatically
+        window.location.href = deepLink;
+
       } catch (e) {
-        console.error('Firestore error:', e);
+        statusEl.className = 'error';
+        statusEl.textContent = 'Something went wrong. Please try opening the link again.';
+        console.error(e);
       }
+    }
 
-      window.location.href = deepLink;
-
-      setTimeout(() => {
-        document.getElementById('status-msg').textContent = "App not installed? Download Aisly first 👇";
-        document.getElementById('open-btn').textContent = 'Try again';
-      }, 2500);
-    });
+    activate();
   </script>
 </body>
 </html>
