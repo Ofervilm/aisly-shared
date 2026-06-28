@@ -145,7 +145,7 @@
         footerEl.textContent = `You joined as: ${decodedName}`;
 
         // Deep link to open Aisly app
-        const deepLink = `aisly://shared?id=${shareId}&name=${encodeURIComponent(decodedName)}`;
+        const deepLink = `aisly://shared/${shareId}`;
         openBtn.href = deepLink;
         openBtn.style.display = 'block';
         downloadBtn.style.display = 'block';
