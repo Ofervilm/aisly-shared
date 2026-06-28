@@ -144,7 +144,7 @@
         statusEl.textContent = '✅ You\'re all set!';
         footerEl.textContent = `You joined as: ${decodedName}`;
 
-        // Deep link to open Aisly app
+        // Deep link to open Aisly app — matches App.js linking config
         const deepLink = `aisly://shared/${shareId}`;
         openBtn.href = deepLink;
         openBtn.style.display = 'block';
