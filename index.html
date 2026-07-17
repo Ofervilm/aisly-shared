@@ -84,9 +84,10 @@
 
     async function activate() {
       const params = new URLSearchParams(window.location.search);
-      const shareId = params.get('id');
-      const name    = params.get('name');
-      const perm    = params.get('perm');
+      const shareId  = params.get('id');
+      const name     = params.get('name');
+      const perm     = params.get('perm');
+      const inviteId = params.get('inviteId'); // stable per-invitee id — added so the app and Cloud Functions can reliably tell invitees apart instead of matching on name
 
       const titleEl    = document.getElementById('title');
       const subtitleEl = document.getElementById('subtitle');
@@ -121,17 +122,24 @@
         const ownerName = data.ownerName || 'Someone';
         subtitleEl.textContent = `${ownerName} has invited you to their Aisly shopping list!`;
 
-        // Update invitee status from pending → active
+        // Update invitee status from pending → active.
+        // Match by inviteId when present (new links) — falls back to name
+        // matching only for OLD links that predate inviteId, so existing
+        // invite links already sent out don't just break.
         const invitees = data.invitees || [];
-        const updated = invitees.map(i =>
-          i.name === decodedName
+        let matched = false;
+        const updated = invitees.map(i => {
+          const isMatch = inviteId ? i.inviteId === inviteId : i.name === decodedName;
+          if (isMatch) matched = true;
+          return isMatch
             ? { ...i, status: 'active', permission: decodedPerm, activatedAt: new Date().toISOString() }
-            : i
-        );
+            : i;
+        });
 
-        // If invitee not in list yet (old links), add them
-        if (!invitees.some(i => i.name === decodedName)) {
+        // If invitee not found (very old links with no matching record at all), add them
+        if (!matched) {
           updated.push({
+            inviteId: inviteId || `legacy_${Date.now()}`,
             name: decodedName,
             permission: decodedPerm,
             status: 'active',
@@ -144,8 +152,12 @@
         statusEl.textContent = '✅ You\'re all set!';
         footerEl.textContent = `You joined as: ${decodedName}`;
 
-        // Deep link to open Aisly app — matches App.js linking config
-        const deepLink = `aisly://shared/${shareId}`;
+        // Deep link to open Aisly app — matches App.js linking config.
+        // inviteId is passed through as a query param so the app itself
+        // knows which invitee record belongs to this person once inside.
+        const deepLink = inviteId
+          ? `aisly://shared/${shareId}?inviteId=${inviteId}`
+          : `aisly://shared/${shareId}`;
         openBtn.href = deepLink;
         openBtn.style.display = 'block';
         downloadBtn.style.display = 'block';
