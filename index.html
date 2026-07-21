@@ -85,7 +85,8 @@
     async function activate() {
       const params = new URLSearchParams(window.location.search);
       const shareId  = params.get('id');
-      const name     = params.get('name');
+      const emailParam = params.get('email'); // new: email is the real identifier
+      const name     = params.get('name'); // legacy — old links sent before email-based invites existed
       const perm     = params.get('perm');
       const inviteId = params.get('inviteId'); // stable per-invitee id — added so the app and Cloud Functions can reliably tell invitees apart instead of matching on name
 
@@ -96,15 +97,16 @@
       const downloadBtn = document.getElementById('downloadBtn');
       const footerEl   = document.getElementById('footer');
 
-      if (!shareId || !name) {
+      if (!shareId || (!emailParam && !name)) {
         titleEl.textContent = 'Invalid link';
         subtitleEl.textContent = 'This invite link is missing some information. Please ask the sender to resend it.';
         statusEl.textContent = '';
         return;
       }
 
-      const decodedName = decodeURIComponent(name);
-      const decodedPerm = decodeURIComponent(perm || 'can_shop');
+      const decodedEmail = emailParam ? decodeURIComponent(emailParam).toLowerCase() : null;
+      const decodedName  = decodedEmail ? decodedEmail.split('@')[0] : decodeURIComponent(name);
+      const decodedPerm  = decodeURIComponent(perm || 'can_shop');
 
       titleEl.textContent = `Hi ${decodedName}! 👋`;
 
@@ -123,16 +125,20 @@
         subtitleEl.textContent = `${ownerName} has invited you to their Aisly shopping list!`;
 
         // Update invitee status from pending → active.
-        // Match by inviteId when present (new links) — falls back to name
-        // matching only for OLD links that predate inviteId, so existing
-        // invite links already sent out don't just break.
+        // Match by inviteId first (most reliable), then by email (the real
+        // identity key for new invites), then by name only for very old
+        // legacy links that predate both.
         const invitees = data.invitees || [];
         let matched = false;
         const updated = invitees.map(i => {
-          const isMatch = inviteId ? i.inviteId === inviteId : i.name === decodedName;
+          const isMatch = inviteId
+            ? i.inviteId === inviteId
+            : decodedEmail
+              ? (i.email || '').toLowerCase() === decodedEmail
+              : i.name === decodedName;
           if (isMatch) matched = true;
           return isMatch
-            ? { ...i, status: 'active', permission: decodedPerm, activatedAt: new Date().toISOString() }
+            ? { ...i, status: 'active', permission: decodedPerm, activatedAt: new Date().toISOString(), ...(decodedEmail ? { email: decodedEmail } : {}) }
             : i;
         });
 
@@ -141,6 +147,7 @@
           updated.push({
             inviteId: inviteId || `legacy_${Date.now()}`,
             name: decodedName,
+            ...(decodedEmail ? { email: decodedEmail } : {}),
             permission: decodedPerm,
             status: 'active',
             activatedAt: new Date().toISOString(),
