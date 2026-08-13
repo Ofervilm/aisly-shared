@@ -152,7 +152,10 @@
           statusEl.textContent = '';
           subtitleEl.textContent = 'This invite is no longer valid.';
         } else {
-          statusEl.textContent = 'Something went wrong. Please try opening the link again.';
+          // TEMPORARY: surfacing the real error on-screen while diagnosing
+          // the invite-activation flow. Revert to the generic message once
+          // the root cause is confirmed and fixed.
+          statusEl.textContent = `Something went wrong. [${e?.code || 'no-code'}] ${e?.message || e}`;
         }
         console.error(e);
       }
