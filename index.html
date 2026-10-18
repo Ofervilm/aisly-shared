@@ -3,168 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
   <title>Aisly – You've been invited!</title>
+  <!--
+    Old invite links (before Oct 2026) pointed here. This page used to jump
+    straight to an aisly:// link, which WhatsApp's built-in browser can't
+    open ("You may not have a proper app for viewing this content"). It now
+    forwards to the same invite on aisly.co.uk, which opens the app directly
+    when it's installed (App Links) and otherwise shows the invite on the web.
+  -->
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f8f9fa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 24px;
-    }
-    .card {
-      background: #fff;
-      border-radius: 24px;
-      padding: 40px 32px;
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.08);
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 24px; box-sizing: border-box; }
+    .card { background: #fff; border-radius: 24px; padding: 40px 32px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 4px 32px rgba(0,0,0,0.08); }
     .logo { font-size: 48px; margin-bottom: 16px; }
-    h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 8px; }
-    .sub { font-size: 16px; color: #6b7280; margin-bottom: 32px; line-height: 1.5; }
-    .btn {
-      display: block;
-      background: #1D9E75;
-      color: #fff;
-      text-decoration: none;
-      padding: 16px 24px;
-      border-radius: 16px;
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    .btn-secondary {
-      display: block;
-      background: #f3f4f6;
-      color: #1a1a2e;
-      text-decoration: none;
-      padding: 14px 24px;
-      border-radius: 16px;
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 24px;
-    }
-    .status { font-size: 13px; color: #aaa; }
-    .loading { color: #1D9E75; font-size: 15px; margin: 16px 0; }
-    .error { color: #ef4444; font-size: 14px; margin: 16px 0; }
+    h1 { font-size: 24px; color: #1a1a2e; margin: 0 0 8px; }
+    p { font-size: 16px; color: #6b7280; margin: 0 0 24px; line-height: 1.5; }
+    a.btn { display: block; background: #1D9E75; color: #fff; text-decoration: none; padding: 16px 24px; border-radius: 16px; font-size: 17px; font-weight: 700; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">🛒</div>
-    <h1 id="title">You've been invited!</h1>
-    <p class="sub" id="subtitle">Loading your invite...</p>
-    <p class="loading" id="status">Activating your invite...</p>
-    <a id="openBtn" class="btn" style="display:none">Open in Aisly</a>
-    <a id="webBtn" class="btn-secondary" style="display:none">Open in your browser</a>
-    <a id="downloadBtn" class="btn-secondary" href="https://play.google.com/store/apps/details?id=com.aisly.grocery" style="display:none">Download Aisly Free</a>
-    <p class="status" id="footer"></p>
+    <h1>You've been invited!</h1>
+    <p>Opening your Aisly invite…</p>
+    <a id="open" class="btn" href="https://aisly.co.uk/">Open invite</a>
   </div>
-
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBqXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      authDomain: "myapp-e1696.firebaseapp.com",
-      projectId: "myapp-e1696",
-      storageBucket: "myapp-e1696.appspot.com",
-      messagingSenderId: "XXXXXXXXXXXX",
-      appId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const functions = getFunctions(app);
-
-    async function activate() {
-      const params = new URLSearchParams(window.location.search);
-      const shareId  = params.get('id');
-      const emailParam = params.get('email'); // new: email is the real identifier
-      const name     = params.get('name'); // legacy — old links sent before email-based invites existed
-      const inviteId = params.get('inviteId'); // stable per-invitee id — required now that markInviteOpened matches on it server-side
-
-      const titleEl    = document.getElementById('title');
-      const subtitleEl = document.getElementById('subtitle');
-      const statusEl   = document.getElementById('status');
-      const openBtn    = document.getElementById('openBtn');
-      const downloadBtn = document.getElementById('downloadBtn');
-      const webBtn     = document.getElementById('webBtn');
-      const footerEl   = document.getElementById('footer');
-
-      if (!shareId || !inviteId || (!emailParam && !name)) {
-        titleEl.textContent = 'Invalid link';
-        subtitleEl.textContent = 'This invite link is missing some information. Please ask the sender to resend it.';
-        statusEl.textContent = '';
-        return;
+  <script>
+    (function () {
+      var q = new URLSearchParams(window.location.search);
+      var id = q.get('id') || q.get('shareId');
+      var target = 'https://aisly.co.uk/';
+      if (id) {
+        var out = new URLSearchParams();
+        ['inviteId', 'email', 'name', 'perm'].forEach(function (k) { if (q.get(k)) out.set(k, q.get(k)); });
+        var rest = out.toString();
+        target = 'https://aisly.co.uk/shared/' + encodeURIComponent(id) + (rest ? '?' + rest : '');
       }
-
-      const decodedEmail = emailParam ? decodeURIComponent(emailParam).toLowerCase() : null;
-      const decodedName  = decodedEmail ? decodedEmail.split('@')[0] : decodeURIComponent(name);
-
-      titleEl.textContent = `Hi ${decodedName}! 👋`;
-
-      try {
-        // Public read only — the actual "mark opened" write happens
-        // server-side via markInviteOpened below. This page has no Firebase
-        // Auth context yet (the invitee hasn't signed in), and Firestore
-        // rules correctly require auth on every sharedLists write, so a
-        // direct client-side setDoc here would always fail permission-denied.
-        // Only the owner's and list's names, from the server (getInvitePreview)
-        // — the share document itself needs sign-in (privacy fix, 30 Sep 2026).
-        const preview = (await httpsCallable(functions, 'getInvitePreview')({ shareId })).data || {};
-
-        if (!preview.exists) {
-          statusEl.textContent = '';
-          subtitleEl.textContent = 'This invite link has expired or is no longer valid.';
-          return;
-        }
-
-        const ownerName = preview.ownerName || 'Someone';
-        subtitleEl.textContent = `${ownerName} has invited you to their Aisly shopping list!`;
-
-        const markInviteOpened = httpsCallable(functions, 'markInviteOpened');
-        await markInviteOpened({ shareId, inviteId });
-
-        statusEl.textContent = '✅ You\'re all set!';
-        footerEl.textContent = `You joined as: ${decodedName}`;
-
-        // Deep link to open Aisly app — matches App.js linking config.
-        // inviteId is passed through as a query param so the app itself
-        // knows which invitee record belongs to this person once inside.
-        const deepLink = `aisly://shared/${shareId}?inviteId=${inviteId}`;
-        openBtn.href = deepLink;
-        openBtn.style.display = 'block';
-        downloadBtn.style.display = 'block';
-        // No app (computer, or Aisly not installed): the same list on the Aisly
-        // website, which joins you after you sign in with the invited email.
-        webBtn.href = 'https://aisly.co.uk/shared/' + encodeURIComponent(shareId)
-          + '?inviteId=' + encodeURIComponent(inviteId) + (decodedEmail ? '&email=' + encodeURIComponent(decodedEmail) : '');
-        webBtn.style.display = 'block';
-
-        // Try to open app automatically
-        window.location.href = deepLink;
-
-      } catch (e) {
-        statusEl.className = 'error';
-        if (e?.code === 'functions/not-found') {
-          statusEl.textContent = '';
-          subtitleEl.textContent = 'This invite is no longer valid.';
-        } else {
-          statusEl.textContent = 'Something went wrong. Please try opening the link again.';
-        }
-        console.error(e);
-      }
-    }
-
-    activate();
+      document.getElementById('open').href = target;
+      window.location.replace(target);
+    })();
   </script>
 </body>
 </html>
